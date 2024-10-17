@@ -16,14 +16,20 @@ _ini() {
     declare -rg mlx_fil_md="$mlx_dir_ru/mlx.md"
     declare -rg mlx_fil_mi="$mlx_dir_ru/mlx.mime"
     declare -rg mlx_fil_hlx="$mlx_dir_ru/mlx.html"
+    declare -rg mlx_fil_hly="$mlx_dir_ru/mly.html"
+    
     declare -rg mlx_fil_hlr="$mlx_dir_ri/text-html2"
     declare -rg mlx_fil_hlr1="$mlx_dir_ri/text-html1"
     declare -rg mlx_fil_hlr0="$mlx_dir_ri/text-html0"
     declare -rg mlx_fil_txt1="$mlx_dir_ri/text-plain0"
     declare -rg mlx_fil_txt3="$mlx_dir_ri/text-plain1"
     declare -rg mlx_fil_txt2="$mlx_dir_ri/textfile0"
+
     declare -rg browser_cur="qb m"
-    declare -rg browser_winf="$BROWSER_WINF"
+    declare -rg browser_winf="qb fl"
+
+    : ${FIFO_X:="$mlx_dir_ru/fifo"}
+    : ${FIFO_GUARD:="$mlx_dir_ru/fifo-guard"}
 
     mkdir -p "${mlx_dir_ru}" "${mlx_dir_ri}" ;}
     #browser_win="$BROWSER_WIN"
@@ -58,9 +64,10 @@ _remote_sync() {
 
 # browsing #############################################
 
-_term_b()  { elinks "${mlx_fil_hlx}" & }
-_b_float() { $browser_winf "file://$mailf" ; }
-_brx()     { $browser_cur "${mlx_fil_hlx}" & }
+_btr()     { elinks "${mlx_fil_hlx}" & } # term; task: issue in a st window?
+_bfx()     { $browser_winf "file://${mailf}" ; } # float
+_bry()     { $browser_cur  "file://${mlx_fil_hly}" & }
+_brx()     { $browser_cur  "file://${mlx_fil_hlx}" & }
 
 
 # piping ###############################################
@@ -84,10 +91,11 @@ _listen() {
 
     #rm -f "${FIFO_X:="/tmp/mutt-fifo"}"
 
-    [ -f "${FIFO_X:="/tmp/mutt-fifo"}" ] && exit 0
+    [ -p "${FIFO_X}" ] && exit 0
+    [ -f "${FIFO_X}" ] && [ ! -p "${FIFO_X}" ] && rm "${FIFO_X}"
 
-    mkfifo "${FIFO_X:="/tmp/mutt-fifo"}" >/dev/null 2>&1
-    mkfifo "${FIFO_GUARD:="/tmp/mutt-fifo-guard"}" >/dev/null 2>&1
+    mkfifo "${FIFO_X}" >/dev/null 2>&1
+    mkfifo "${FIFO_GUARD}" >/dev/null 2>&1
 
     #mkfifo "${fifo_log:="/tmp/fifo-log"}"
     
@@ -95,7 +103,7 @@ _listen() {
     #>"${fifo_log}" <"${FIFO_GUARD2}" & # guard: prevents eof closes on reader
 
     while read -r x ; do
-
+        
         timeout 0.1 cat "${FIFO_X}" > /dev/null 2>&1 # interupt que
         ripmime --name-by-type --overwrite -d "${mlx_dir_ri}" -i "${mlx_fil_mi}"
 
@@ -140,14 +148,17 @@ _main() {
     _ini ${@}
 
     case $cmd in # todo: standardise names
+        # data operations
         sync)       _remote_sync ;;
+        # retrieve metadata
         uid)        _prn_uid ;;
         # view
         qb.rip)     _listen ;;
         qb.rip.y)   _pip_brx  ${@} ;;
-        browser)    _b ;;
-        qb.float)   _b_float ;;
-        term)       _term_b ;;
+        brx)        _brx ;;
+        bry)        _bry ;;
+        qb.float)   _bfx ;;
+        term)       _btr ;;
         term_view)  _term_view ;;# MD VIEWER VARIATIONS
         # convert
         md2html)     ;; #?
