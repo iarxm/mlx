@@ -27,6 +27,8 @@ _ini() {
 
     declare -rg browser_cur="qb m"
     declare -rg browser_winf="qb fl"
+    declare -rg browser_qmx="qb mx"
+    declare -rg browser_qmy="qb my"
 
     : ${FIFO_X:="$mlx_dir_ru/fifo"}
     : ${FIFO_GUARD:="$mlx_dir_ru/fifo-guard"}
@@ -65,9 +67,9 @@ _remote_sync() {
 # browsing #############################################
 
 _btr()     { elinks "${mlx_fil_hlx}" & } # term; task: issue in a st window?
-_bfx()     { $browser_winf "file://${mailf}" ; } # float
-_bry()     { $browser_cur  "file://${mlx_fil_hly}" & }
-_brx()     { $browser_cur  "file://${mlx_fil_hlx}" & }
+#_bfx()     { $browser_winf "file://${mailf}" ; } # float
+_brx()     { $browser_qmx & }
+_bry()     { $browser_qmy & }
 
 
 # piping ###############################################
