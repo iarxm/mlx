@@ -2,10 +2,28 @@
 
 # mail@iarom.org Iarom Madden
 
+# todo: integrate other scripts into here - eg nm cases
+
 _ini() {
     declare -rg cmd=$1 && shift 1
     declare -rg cfg_notmuch="/home/$USER/.config/notmuch/notmuchrc"
     declare -rg cfg_mbsync="/home/$USER/.config/isync/isyncrc"
+
+# imported from aliases file
+
+alias oauth-msmtp="oauth2ms | pass insert -e micro/fs/mbsync/token-tmp"
+
+imap_server='imap.mailbox.org'
+imap_user='iao@mailbox.org'
+imap_pswdi='mailbox.org/m@iarom.org'
+imap_sieve_config="${XDG_CONFIG_HOME}/sieve/Open-Xchange"
+
+sieve-cmd="sieve-connect \
+        --server "${imap_server}" \
+        --user "${imap_user}" \
+        --localsieve ${imap_sieve_config} \
+        --passwordfd=5"
+
 }
 
 
@@ -16,13 +34,37 @@ _remote_sync_run() {
     mbsync -c "${cfg_mbsync}" --all
     echo "Notmuch:"
     notmuch --config="${cfg_notmuch}" new
-} ##--quiet >> /dev/null
+}
+##--quiet >> /dev/null
 
 
 _remote_sync() {
-  _remote_sync_ini1
   _remote_sync_run
 }
+
+ml_seive_connect() { sieve-cmd 5<<<"$(pass show ${imap_pswdi})";}
+
+ml_sieve_sync() {
+    sieve-cmd \
+        --upload \
+        5<<<"$(pass show ${pswdi})"
+}
+
+# _ml_mdir_set() {
+    # TODO
+    #mdir_adef="$XDG_CONFIG_HOME/mutt/m/mdir.adef" # Change current mailbox
+    #alias ml.set.mdia="printf "source $XDG_CONFIG_HOME/mutt/m/mdir.ia" > $mdir_adef"
+    #alias ml.set.mdimap="printf "source $XDG_CONFIG_HOME/mutt/m/mdir.imapia" > $XDG_CONFIG_HOME/mutt/m/mdir.adef"
+#}
+#   --authmech digest-md5 \
+# alias ml.ws="ml ws"
+
+### TODO
+
+# - [ ] '<<<' is a bashism . Solutions?
+# - [ ] make current mailbox into an exportable variable?
+# - [ ] make parts into case script?
+# - [ ] move sieve commands to ml script and call them here via an alias
 
 
 _main() {
