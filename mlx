@@ -4,21 +4,24 @@
 
 # todo: integrate other scripts into here - eg nm cases
 
-_ini() {
+_ini()
+{
     declare -rg cmd=$1 && shift 1
     declare -rg cfg_notmuch="/home/$USER/.config/notmuch/notmuchrc"
     declare -rg cfg_mbsync="/home/$USER/.config/isync/isyncrc"
 
-# imported from aliases file
 
-alias oauth-msmtp="oauth2ms | pass insert -e micro/fs/mbsync/token-tmp"
+    alias oauth-msmtp="oauth2ms | pass insert -e micro/fs/mbsync/token-tmp"
+}
 
-imap_server='imap.mailbox.org'
-imap_user='iao@mailbox.org'
-imap_pswdi='mailbox.org/m@iarom.org'
-imap_sieve_config="${XDG_CONFIG_HOME}/sieve/Open-Xchange"
+_ini_imap()
+{
+    imap_server='imap.mailbox.org'
+    imap_user='iao@mailbox.org'
+    imap_pswdi='mailbox.org/m@iarom.org'
+    imap_sieve_config="${XDG_CONFIG_HOME}/sieve/Open-Xchange"
 
-sieve-cmd="sieve-connect \
+    sieve-cmd="sieve-connect \
         --server "${imap_server}" \
         --user "${imap_user}" \
         --localsieve ${imap_sieve_config} \
@@ -26,9 +29,8 @@ sieve-cmd="sieve-connect \
 
 }
 
-
-_remote_sync_run() { 
-    
+_remote_sync_run()
+{
     STATE="$(nmcli networking connectivity)"
     [ ${STATE} = 'full' ] || { echo "No internet connection."; exit 1; }
     mbsync -c "${cfg_mbsync}" --all
@@ -38,13 +40,15 @@ _remote_sync_run() {
 ##--quiet >> /dev/null
 
 
-_remote_sync() {
+_remote_sync()
+{
   _remote_sync_run
 }
 
 ml_seive_connect() { sieve-cmd 5<<<"$(pass show ${imap_pswdi})";}
 
-ml_sieve_sync() {
+ml_sieve_sync()
+{
     sieve-cmd \
         --upload \
         5<<<"$(pass show ${pswdi})"
@@ -67,8 +71,8 @@ ml_sieve_sync() {
 # - [ ] move sieve commands to ml script and call them here via an alias
 
 
-_main() {
-
+_main()
+{
     _ini ${@}
 
     case ${cmd} in
