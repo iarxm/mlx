@@ -1,0 +1,85 @@
+#!/bin/env bash
+
+# mail@iarom.org Iarom Madden
+
+# todo: integrate other scripts into here - eg nm cases
+
+_ini()
+{
+    declare -rg cmd=$1 && shift 1
+    declare -rg cfg_notmuch="/home/$USER/.config/notmuch/notmuchrc"
+    declare -rg cfg_mbsync="/home/$USER/.config/isync/isyncrc"
+
+    declare -rg imap_server
+    declare -rg imap_user
+    declare -rg imap_pswdi
+    declare -rg imap_sieve_config
+
+    declare -rg oauth_msmtp_pass
+    source "${XDG_CONFIG_HOME}/mlx/mlx.cfg"
+    _ml_var_ini
+    alias oauth-msmtp="oauth2ms | pass insert -e ${oauth_msmtp_pass}"
+}
+
+ini_imap()
+{
+    sieve-cmd="sieve-connect \
+        --server "${imap_server}" \
+        --user "${imap_user}" \
+        --localsieve ${imap_sieve_config} \
+        --passwordfd=5"
+}
+
+remote_sync_run()
+{
+    STATE="$(nmcli networking connectivity)"
+    [ ${STATE} = 'full' ] || { echo "No internet connection."; exit 1; }
+    mbsync -c "${cfg_mbsync}" --all
+    echo "Notmuch:"
+    notmuch --config="${cfg_notmuch}" new
+}
+##--quiet >> /dev/null
+
+
+remote_sync()
+{
+    remote_sync_run
+}
+
+ml_seive_connect() { sieve-cmd 5<<<"$(pass show ${imap_pswdi})";}
+
+ml_sieve_sync()
+{
+    sieve-cmd \
+        --upload \
+        5<<<"$(pass show ${pswdi})"
+}
+
+# _ml_mdir_set() {
+    # TODO
+    #mdir_adef="$XDG_CONFIG_HOME/mutt/m/mdir.adef" # Change current mailbox
+    #alias ml.set.mdia="printf "source $XDG_CONFIG_HOME/mutt/m/mdir.ia" > $mdir_adef"
+    #alias ml.set.mdimap="printf "source $XDG_CONFIG_HOME/mutt/m/mdir.imapia" > $XDG_CONFIG_HOME/mutt/m/mdir.adef"
+#}
+#   --authmech digest-md5 \
+# alias ml.ws="ml ws"
+
+### TODO
+
+# - [ ] '<<<' is a bashism . Solutions?
+# - [ ] make current mailbox into an exportable variable?
+# - [ ] make parts into case script?
+# - [ ] move sieve commands to ml script and call them here via an alias
+
+
+main()
+{
+    _ini "${@}"
+
+    case ${cmd} in
+        sync)       remote_sync ;;
+        md2html)     ;; #?
+    esac
+}
+
+main "${@}"

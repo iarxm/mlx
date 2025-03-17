@@ -1,0 +1,38 @@
+#!/bin/sh
+
+cmd=${1} && shift 1
+
+source "${XDG_CONFIG_HOME}/mlx/mlx.cfg"
+
+case ${cmd} in
+
+    kill)
+        # kill all messages with 'kill' tag..
+        kill=$(notmuch search \
+            --output=files \
+            --format=text \
+            tag:kill )
+            
+        for k in ${kill}; do
+            [ -e "${k}" ] then
+            rm $k
+        done
+
+        notmuch new
+            # update database post mods
+    ;;
+
+    tag)
+        _nm_tg
+        ## finish 
+        #mlnm.mv
+        notmuch new
+        # - [ ] for moving based on tags - refer to other script
+        # - [ ] tag newsletters, but dont show them in inbox
+    ;;
+
+    mv)
+        ## dont use this function - possibly unintended metadata writes
+        _nm_mv
+        ;;        
+esac

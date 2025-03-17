@@ -1,0 +1,72 @@
+#!/bin/sh
+
+# IAROM MADDEN mail@iarom.org
+
+# newsletter and link sharing macros
+# - email scripting for batch mails and link sending from mutt
+# - distributing communications for data files and newsletters
+
+# - [ ] CLEANUP;Future: Integrate code into previous
+
+
+# NEWSLETTER/GROUP EMAIL SCRIPT
+ml_nws () {
+    subj="$1"
+    body="$2"
+    addr_f="$3"
+    
+    addr_ls=`awk -F ', ' '{print $1" "$2}' < $addr_f`
+    
+    while IFS= read -r addr; do
+        echo "$addr"
+        neomutt -s "$subj" "$addr" < $body
+    done <<EOF
+    $addr_ls
+    
+EOF
+
+    # update to extract subject from the "body" file??
+    # use caution when modiyfing $IFS. 
+    # - can unintendedly transform a message into one line or the like
+    # - the email test included multiple emails in one address bar, 
+    # - public information leak
+}
+
+# NEWSLETTER ONEMAIL
+ml_nws_one ()
+{
+    # for putting recipients all on the "to" field - use the other script for privacy where no one can see each others email..
+    subj="$1"
+    body="$2"
+    addr_f="$3"
+    addr_ls=`awk -F ', ' '{print $1" "$2}' < $addr_f`
+    #neomutt -s "$subj" -i "$body" -- "$addr_ls"
+    neomutt -s "$subj" -- "$addr_ls" < $body
+}
+
+# share link
+
+ml_lnk ()
+{
+    # TODO
+    name=""
+    mutt -s "Videos" x
+    # make it: takes full name as input, 
+    #.. -> fetches dir of name with containing videos
+    #.. -> generates link with rclone
+    #.. -> compose email to name with link attached
+    # make it: takes list of names and recurses like above
+}
+
+main()
+{
+    cmd="${1}" && shift 1
+    
+    case ${cmd} in 
+        nws) ml_nws ;;
+        nws1) ml_nws_one ;;
+        lnk) ml_lnk ;;
+    esac
+}
+
+main "${@}"
